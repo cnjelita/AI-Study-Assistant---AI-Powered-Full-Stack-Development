@@ -1,0 +1,8 @@
+:root { font-family: system-ui, -apple-system, sans-serif; color: #202c40; background: #f3f6fb; font-synthesis: none; text-rendering: optimizeLegibility; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+h1 { font-size: 1.8rem; margin-top: 0; }
+h2 { font-size: 1.25rem; }
+p { line-height: 1.6; }
+a { color: #234b9b; text-underline-offset: 4px; }
+:focus-visible { outline: 3px solid #567ee1; outline-offset: 3px; }
