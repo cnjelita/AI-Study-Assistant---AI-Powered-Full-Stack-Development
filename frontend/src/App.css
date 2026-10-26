@@ -1,0 +1,24 @@
+header { background: #fff; border-bottom: 1px solid #dce2eb; padding: 1.2rem 5%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.brand { font-size: 1.3rem; font-weight: 750; color: #243d79; }
+nav { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+nav span { font-size: .9rem; }
+nav a.active { font-weight: 700; text-decoration-thickness: 3px; }
+main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+.card { background: white; padding: 2rem; border: 1px solid #dce2eb; border-radius: 12px; }
+.auth { max-width: 440px; margin: auto; }
+form, label { display: flex; flex-direction: column; gap: .5rem; }
+form { gap: 1.1rem; margin: 1.5rem 0; }
+label { font-weight: 600; }
+input, textarea { width: 100%; padding: .7rem; border: 1px solid #8995a8; border-radius: 6px; background: white; color: inherit; font: inherit; }
+textarea { resize: vertical; }
+.checkbox { flex-direction: row; align-items: center; font-weight: 400; }
+.checkbox input { width: auto; }
+button { width: fit-content; border: 0; border-radius: 6px; padding: .7rem 1rem; color: white; background: #294d9c; font: inherit; font-weight: 600; cursor: pointer; }
+button:disabled { opacity: .65; cursor: wait; }
+.secondary { color: #243d79; background: #eaf0ff; }
+.error { background: #fff0f0; color: #9b2020; border-left: 4px solid #b62a2a; padding: 1rem; overflow-wrap: anywhere; }
+.answer, .note { border-top: 1px solid #dce2eb; margin-top: 1.5rem; padding-top: 1rem; }
+.preserve-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.75; }
+.subject { font-weight: 600; color: #495a73; }
+small { display: block; font-size: .85rem; color: #4b586f; margin-top: .5rem; }
+@media (max-width: 600px) { .card { padding: 1.2rem; } nav { gap: .8rem; } main { margin-top: 1rem; } }
