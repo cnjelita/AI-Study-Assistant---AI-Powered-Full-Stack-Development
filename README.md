@@ -94,8 +94,10 @@ Open `http://localhost:3001`. Express serves both `/api` and the React pages,
 including direct page navigation. Use HTTPS at a reverse proxy before deploying
 publicly; JWTs are bearer credentials. Sessions expire after two hours, are stored
 per browser tab in session storage, and are cleared by Logout. The API checks the
-current database role on every protected request. Rate limiting is in-memory for
-this single-process demo; a multi-instance deployment needs a shared limiter.
+current database role on every protected request. IP-based rate limiting runs
+before authentication/database access, with tighter limits for login, registration,
+note indexing, and study requests. Limits are in-memory for this single-process
+demo; a multi-instance deployment needs a shared limiter.
 
 ## API
 

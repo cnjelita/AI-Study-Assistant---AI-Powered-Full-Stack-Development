@@ -73,6 +73,21 @@ test('registration rejects invalid credentials, role injection, bcrypt-truncated
   assert.equal(state.users.length, 3);
 });
 
+test('email validation rejects malformed and pathological bounded inputs without database access', async t => {
+  const { request, state } = await startFixture(t);
+  for (const email of [
+    'a@@example.test', '@example.test', 'a@.example', 'a@example.', 'a@example..test',
+    'a@exam ple.test', 'a@localhost', 'a'.repeat(240) + '@.',
+    'a@' + '.'.repeat(250), 'a'.repeat(10000) + '@example.test',
+  ]) {
+    const result = await request('/auth/register', {
+      method: 'POST', body: { name: 'Learner', email, password: 'study-password-2026' },
+    });
+    assert.equal(result.status, 400);
+  }
+  assert.equal(state.users.length, 3);
+});
+
 test('login verifies password and returns a signed expiring JWT and user', async t => {
   const { request } = await startFixture(t);
   const result = await request('/auth/login', {
@@ -227,6 +242,10 @@ test('invalid JSON, non-object bodies, oversized JSON, and unknown routes have s
 
 test('login and study request limits return 429 with Retry-After', async t => {
   const { request } = await startFixture(t);
+  for (let i = 0; i < 10; i++) {
+    assert.equal((await request('/auth/register', { method: 'POST', body: {} })).status, 400);
+  }
+  assert.equal((await request('/auth/register', { method: 'POST', body: {} })).status, 429);
   for (let i = 0; i < 15; i++) {
     assert.equal((await request('/auth/login', { method: 'POST', body: {} })).status, 400);
   }
@@ -237,6 +256,35 @@ test('login and study request limits return 429 with Retry-After', async t => {
     assert.equal((await request('/study/ask', { method: 'POST', auth: token(ids.learner), body: { question: 'Explain gravity' } })).status, 200);
   }
   assert.equal((await request('/study/ask', { method: 'POST', auth: token(ids.learner), body: { question: 'Explain gravity' } })).status, 429);
+  assert.equal((await request('/study/ask', { method: 'POST', auth: token(ids.adminA), body: { question: 'Explain gravity' } })).status, 200);
+});
+
+test('note indexing limit is per administrator and independent of other users', async t => {
+  const { request } = await startFixture(t);
+  for (let i = 0; i < 10; i++) {
+    assert.equal((await request('/notes', { method: 'POST', auth: token(ids.adminA), body: {} })).status, 400);
+  }
+  assert.equal((await request('/notes', { method: 'POST', auth: token(ids.adminA), body: {} })).status, 429);
+  assert.equal((await request('/notes', { method: 'POST', auth: token(ids.adminB), body: {} })).status, 400);
+});
+
+test('global IP limit covers aliases, auth database access, note listing, parsing, and SPA files', async t => {
+  const { request, state } = await startFixture(t, { distPath: fileURLToPath(new URL('./fixtures/', import.meta.url)) });
+  const auth = token();
+  assert.equal((await request('/api/auth/me', { auth })).status, 200);
+  for (let i = 0; i < 299; i++) assert.equal((await request('/api/missing')).status, 404);
+  for (const route of ['/api/auth/me', '/auth/me', '/api/notes', '/notes', '/study']) {
+    const result = await request(route, { auth, headers: { Accept: 'text/html' } });
+    assert.equal(result.status, 429);
+    assert.deepEqual(result.data, { error: 'Too many requests. Try again later.' });
+    assert.ok(Number(result.headers.get('retry-after')) > 0);
+    assert.ok(result.headers.has('ratelimit'));
+    assert.equal(result.headers.has('x-ratelimit-limit'), false);
+  }
+  assert.equal((await request('/api/study/ask', { method: 'POST', auth, raw: '{broken' })).status, 429);
+  assert.equal(state.calls.users.length, 1);
+  assert.equal(state.calls.notes.length, 0);
+  assert.equal(state.calls.embeds.length, 0);
 });
 
 test('production SPA fallback serves frontend routes but never API errors or missing assets', async t => {
